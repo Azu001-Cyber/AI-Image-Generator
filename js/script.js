@@ -10,7 +10,7 @@ const countSelect = document.getElementById("count-select")
 const ratioSelect = document.getElementById("ratio-select")
 const gridGallery = document.querySelector(".gallery-grid")
 
-// const API_KEY = ""; //Hugging face API key
+const API_KEY = ""; //Hugging face API key
 
 const examplePrompts = [
     "A magic forest with glowing plants and fairy homes among giant mushrooms",
@@ -77,7 +77,7 @@ const updateImageCard = (imgIndex, imgUrl) => {
 }
 
 const generateImages = async (selectedModel, imageCount, aspectRatio, promptText) =>{
-    const MODEL_URL = `https://api-inference.huggingface.co/models/${selectedModel}`;
+    const MODEL_URL = `${selectedModel}`;
 
     const {width, height} = getImageDimensions(aspectRatio);
 
