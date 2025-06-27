@@ -10,7 +10,7 @@ const countSelect = document.getElementById("count-select")
 const ratioSelect = document.getElementById("ratio-select")
 const gridGallery = document.querySelector(".gallery-grid")
 
-const API_KEY = ""; //Hugging face API key
+// const API_KEY = ""; //Hugging face API key
 
 const examplePrompts = [
     "A magic forest with glowing plants and fairy homes among giant mushrooms",
