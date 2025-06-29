@@ -1,16 +1,20 @@
-
+const imageControls = document.querySelectorAll(".image-only"); 
 
 const themeToggle = document.querySelector('.theme-toggle');
-const promptForm = document.querySelector('.prompt-form')
-const promptInput = document.querySelector('.prompt-input')
+const promptForm = document.querySelector('.prompt-form');
+const promptInput = document.querySelector('.prompt-input');
 const promptBtn = document.querySelector(".prompt-btn");
 const generateBtn = document.querySelector(".generate-btn");
-const modelSelect = document.getElementById("model-select")
-const countSelect = document.getElementById("count-select")
-const ratioSelect = document.getElementById("ratio-select")
-const gridGallery = document.querySelector(".gallery-grid")
 
-// const API_KEY = ""; //Hugging face API key
+const modelSelect = document.getElementById("model-select");
+const countSelect = document.getElementById("count-select");
+const ratioSelect = document.getElementById("ratio-select");
+const modeSelect = document.getElementById("mode-select");
+const gridGallery = document.querySelector(".gallery-grid");
+
+const API_KEY = "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";//Hugging face API key
+
+
 
 const examplePrompts = [
     "A magic forest with glowing plants and fairy homes among giant mushrooms",
@@ -46,6 +50,17 @@ const toggleTheme = () => {
     themeToggle.querySelector('i').classList = isDarkTheme ? 'fa-solid fa-sun' : 'bi bi-moon-fill';
 }
 
+const toggleModeControls = () => {
+    const selectedMode = modeSelect.value;
+    imageControls.forEach(control => {
+        control.style.display = selectedMode === "image" ? "block" : "none";
+    });
+};
+
+
+
+
+
 // calculate width and height based on chosen ratio
 const getImageDimensions = (aspectRatio, baseSize = 512) =>{
     const [width, height] = aspectRatio.split('/').map(Number);
@@ -77,7 +92,7 @@ const updateImageCard = (imgIndex, imgUrl) => {
 }
 
 const generateImages = async (selectedModel, imageCount, aspectRatio, promptText) =>{
-    const MODEL_URL = `${selectedModel}`;
+    const MODEL_URL = `https://api-inference.huggingface.co/models/${selectedModel}`;
 
     const {width, height} = getImageDimensions(aspectRatio);
 
@@ -139,6 +154,90 @@ const generateImages = async (selectedModel, imageCount, aspectRatio, promptText
         generateImages(selectedModel, imageCount, aspectRatio, promptText)
     }
 
+async function generateVideo(promptText) {
+    const API_KEY = "YOUR_RUNWAY_API_KEY"; // Replace with your real API key
+    const endpoint = "https://api.runwayml.com/v1/gen2";
+
+    // Step 1: Submit prompt and get run_id
+    const submitRes = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${API_KEY}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            prompt: promptText,
+            num_frames: 16, // or 24, depending on your plan
+            fps: 8
+        })
+    });
+
+    const submitData = await submitRes.json();
+    if (!submitData.run_id) {
+        console.error("Failed to get run_id", submitData);
+        return;
+    }
+
+    const runId = submitData.run_id;
+    console.log("Runway run_id:", runId);
+
+    // Step 2: Poll for status
+    const statusUrl = `https://api.runwayml.com/v1/gen2/${runId}/status`;
+
+    let videoReady = false;
+    let videoUrl = "";
+
+    gridGallery.innerHTML = `
+        <div class="img-card loading">
+            <div class="status-container">
+                <div class="spinner"></div>
+                <p class="status-text">Generating video with Runway...</p>
+            </div>
+        </div>
+    `;
+
+    while (!videoReady) {
+        await new Promise(res => setTimeout(res, 4000)); // Wait 4 seconds between polls
+
+        const pollRes = await fetch(statusUrl, {
+            headers: { "Authorization": `Bearer ${API_KEY}` }
+        });
+
+        const pollData = await pollRes.json();
+        console.log("Poll status:", pollData);
+
+        if (pollData.status === "succeeded") {
+            videoReady = true;
+            videoUrl = pollData.output.video_url;
+        } else if (pollData.status === "failed") {
+            console.error("Video generation failed");
+            gridGallery.innerHTML = `<p class="error-text">Video generation failed.</p>`;
+            return;
+        }
+    }
+
+    // Step 3: Show video
+    gridGallery.innerHTML = `
+        <div class="img-card">
+            <video controls autoplay loop muted width="100%">
+                <source src="${videoUrl}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <div class="img-overlay">
+                <a href="${videoUrl}" class="img-download-btn" download="runway-video.mp4">
+                    <i class="bi bi-download"></i>
+                </a>
+            </div>
+        </div>
+    `;
+    generateBtn.removeAttribute("disabled");
+}
+
+
+   
+
+
+
     // Handel Form submission
 const handleFormSubmit = (e) =>{
     e.preventDefault();
@@ -146,23 +245,28 @@ const handleFormSubmit = (e) =>{
 
 
     const selectedModel = modelSelect.value;
+    const selectedMode = modeSelect.value
 
 
-    if (!selectedModel) {
-    alert("Please select a model.");
-    return;
-    }
 
     const imageCount = parseInt(countSelect.value) || 1;
 
     const aspectRatio = ratioSelect.value || "1/1";
 
     const promptText = promptInput.value.trim();
+    
+    if (!selectedModel || !selectedMode || !promptText) {
+    alert("Please select all fields.");
+    return;
+    }
 
-    createImageCard(selectedModel, imageCount, aspectRatio, promptText)
+    if (selectedMode === "image"){
+        createImageCard(selectedModel, imageCount, aspectRatio, promptText);
 
-
-
+        generateImages(selectedModel, imageCount, aspectRatio, promptText)
+    }else if(selectedMode === "video"){
+        generateVideo(promptText)
+    }
 
 }
 //  Fill prompt input with random example
@@ -175,3 +279,6 @@ promptBtn.addEventListener('click', () => {
 
 promptForm.addEventListener("submit", handleFormSubmit)
 themeToggle.addEventListener("click", toggleTheme);
+modeSelect.addEventListener("change", toggleModeControls);
+
+toggleModeControls();
