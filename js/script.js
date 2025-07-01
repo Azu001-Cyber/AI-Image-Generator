@@ -12,7 +12,7 @@ const ratioSelect = document.getElementById("ratio-select");
 const modeSelect = document.getElementById("mode-select");
 const gridGallery = document.querySelector(".gallery-grid");
 
-const API_KEY = "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";//Hugging face API key
+const API_KEY = "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";//Hugging face API key
 
 
 
@@ -154,87 +154,79 @@ const generateImages = async (selectedModel, imageCount, aspectRatio, promptText
         generateImages(selectedModel, imageCount, aspectRatio, promptText)
     }
 
-async function generateVideo(promptText) {
-    const API_KEY = "YOUR_RUNWAY_API_KEY"; // Replace with your real API key
-    const endpoint = "https://api.runwayml.com/v1/gen2";
+    //  handels video creation
+const generateVideo = async (selectedModel, promptText) => {
+    const endpoint = `https://api-inference.huggingface.co/models/${selectedModel}`;
+    generateBtn.setAttribute("disabled", "true");
 
-    // Step 1: Submit prompt and get run_id
-    const submitRes = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-            "Authorization": `Bearer ${API_KEY}`,
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            prompt: promptText,
-            num_frames: 16, // or 24, depending on your plan
-            fps: 8
-        })
-    });
-
-    const submitData = await submitRes.json();
-    if (!submitData.run_id) {
-        console.error("Failed to get run_id", submitData);
-        return;
-    }
-
-    const runId = submitData.run_id;
-    console.log("Runway run_id:", runId);
-
-    // Step 2: Poll for status
-    const statusUrl = `https://api.runwayml.com/v1/gen2/${runId}/status`;
-
-    let videoReady = false;
-    let videoUrl = "";
-
+    // Show loading UI
     gridGallery.innerHTML = `
-        <div class="img-card loading">
+        <div class="img-card loading" id="video-card-0">
             <div class="status-container">
                 <div class="spinner"></div>
-                <p class="status-text">Generating video with Runway...</p>
+                <p class="status-text">Generating video from Hugging Face...</p>
             </div>
         </div>
     `;
 
-    while (!videoReady) {
-        await new Promise(res => setTimeout(res, 4000)); // Wait 4 seconds between polls
-
-        const pollRes = await fetch(statusUrl, {
-            headers: { "Authorization": `Bearer ${API_KEY}` }
+    try {
+        // Send prompt to Hugging Face model
+        const response = await fetch(endpoint, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${API_KEY}`,
+                "Content-Type": "application/json",
+                "x-use-cache": "false"
+            },
+            body: JSON.stringify({
+                inputs: promptText,
+                parameters: {
+                    num_frames: 16,
+                    fps: 8
+                },
+                options: {
+                    wait_for_model: true
+                }
+            })
         });
 
-        const pollData = await pollRes.json();
-        console.log("Poll status:", pollData);
-
-        if (pollData.status === "succeeded") {
-            videoReady = true;
-            videoUrl = pollData.output.video_url;
-        } else if (pollData.status === "failed") {
-            console.error("Video generation failed");
-            gridGallery.innerHTML = `<p class="error-text">Video generation failed.</p>`;
-            return;
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Error ${response.status}: ${errorText}`);
         }
-    }
 
-    // Step 3: Show video
-    gridGallery.innerHTML = `
-        <div class="img-card">
+        // Get video blob and convert to local URL
+        const result = await response.blob();
+        const videoUrl = URL.createObjectURL(result);
+
+        // Display the video
+        const card = document.getElementById("video-card-0");
+        card.classList.remove("loading");
+        card.innerHTML = `
             <video controls autoplay loop muted width="100%">
                 <source src="${videoUrl}" type="video/mp4">
                 Your browser does not support the video tag.
             </video>
             <div class="img-overlay">
-                <a href="${videoUrl}" class="img-download-btn" download="runway-video.mp4">
+                <a href="${videoUrl}" class="img-download-btn" download="huggingface-video.mp4">
                     <i class="bi bi-download"></i>
                 </a>
             </div>
-        </div>
-    `;
+        `;
+    } catch (error) {
+        console.error(error);
+        const card = document.getElementById("video-card-0");
+        card.classList.replace("loading", "error");
+        card.innerHTML = `
+            <div class="status-container">
+                <p class="status-text">Video generation failed. Check console.</p>
+            </div>
+        `;
+    }
+
     generateBtn.removeAttribute("disabled");
-}
+};
 
-
-   
 
 
 
@@ -265,7 +257,7 @@ const handleFormSubmit = (e) =>{
 
         generateImages(selectedModel, imageCount, aspectRatio, promptText)
     }else if(selectedMode === "video"){
-        generateVideo(promptText)
+        generateVideo(selectedModel, promptText)
     }
 
 }
