@@ -41,41 +41,57 @@
 
                 <!-- Prompt Actions/Buttons -->
                 <div class="prompt-actions">
-                    <div class="select-wrapper">
-                        <select id="model-select" class="custom-select" required>
-                            <option value="" selected disabled>Select Model</option>
-                            <option value="stabilityai/stable-diffusion-xl-base-1.0">Stable Diffusion XL</option>
-                            <option value="Cstable-diffusion-v1-5/stable-diffusion-v1-5">Stable Diffusion v1.5</option>
-                            <option value="prompthero/openjourney">Openjourney</option>
-                            <option value="black-forest-labs/FLUX.1-dev">FLUX.1-dev</option>
-                            <option value="black-forest-labs/FLUX.1-schnell">FLUX.1-schnell</option>
-                        </select>
+                    <div class="select-row">
+                        <div class="select-wrapper">
+                            <select id="model-select" class="custom-select" required>
+                                <option value="" selected disabled>Select Model</option>
+                                <option value="stabilityai/stable-diffusion-xl-base-1.0">Stable Diffusion XL</option>
+                                <option value="black-forest-labs/FLUX.1-dev">FLUX.1-dev</option>
+                                <option value="black-forest-labs/FLUX.1-schnell">FLUX.1-schnell</option>
+                                <hr class="line-through">
+                                <!-- Text to video models -->
+                                <option value="Wan-AI/Wan2.1-T2V-1.3B">Wan2.1-1.3B</option>
+                                <option value="Wan-AI/Wan2.1-T2V-14B">Wan2.1-14B</option>
+                            </select>
+                        </div>
+    
+                        <div class="select-wrapper">
+                            <select id="mode-select" class="custom-select" required>
+                                <option value="" selected disabled>Select Mode</option>
+                                <option value="image" selected>Image</option>
+                                <option value="video">Video</option>
+                            </select>
+                        </div>
+    
+    
+                        <div class="select-wrapper">
+                            <select name="" id="count-select" class="custom-select image-only">
+                                <option value="" selected disabled>Image Count</option> 
+                                <option value="1">1 Image</option>  
+                                <option value="2">2 Images</option>
+                                <option value="3">3 Images</option>
+                                <option value="4">4 Images</option>
+                            </select>
+                        </div>
+    
+                        <div class="select-wrapper">
+                            <select name="" id="ratio-select" class="custom-select image-only">
+                                <option value="" selected disabled>Aspect Ratio</option> 
+                                <option value="1/1">Square (1:1)</option> 
+                                <option value="16/9">Landscape (16:9)</option> 
+                                <option value="9/16">Portrait (9:16)</option> 
+                            </select>
+                        </div>
+                    
+
                     </div>
 
-                    <div class="select-wrapper">
-                        <select name="" id="count-select" class="custom-select" required>
-                            <option value="" selected disabled>Image Count</option> 
-                            <option value="1">1 Image</option>  
-                            <option value="2">2 Images</option>
-                            <option value="3">3 Images</option>
-                            <option value="4">4 Images</option>
-                        </select>
-                    </div>
-
-                    <div class="select-wrapper">
-                        <select name="" id="ratio-select" class="custom-select" required>
-                            <option value="" selected disabled>Aspect Ratio</option> 
-                            <option value="1/1">Square (1:1)</option> 
-                            <option value="16/9">Landscape (16:9)</option> 
-                            <option value="9/16">Portrait (9:16)</option> 
-                        </select>
-                    </div>
-
-                    <button type="submit" class="generate-btn">
-                        <i class="bi bi-magic"></i>
-                        Generate
-                    </button>
-                </div>
+                
+                        <button type="submit" class="generate-btn">
+                            <i class="bi bi-magic"></i>
+                            Generate
+                        </button>
+                </div>  
 
                 <!-- Gallery Grid -->
                 <div class="gallery-grid">
