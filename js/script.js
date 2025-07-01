@@ -129,7 +129,7 @@ const generateImages = async (selectedModel, imageCount, aspectRatio, promptText
         console.log(error);
         const imgCard = document.getElementById(`img-card-${i}`);
         imgCard.classList.replace("loading", "error");
-        imgCard.querySelector(".status-text").textContent = "Generation failed! Check console for more details.";
+        imgCard.querySelector(".status-text").textContent = "Generation failed! Something went wrong..";
     }
     });
     await Promise.allSettled(imagePromises);
@@ -219,7 +219,7 @@ const generateVideo = async (selectedModel, promptText) => {
         card.classList.replace("loading", "error");
         card.innerHTML = `
             <div class="status-container">
-                <p class="status-text">Video generation failed. Check console.</p>
+                <p class="status-text">Video Generation failed! Something went wrong.</p>
             </div>
         `;
     }
